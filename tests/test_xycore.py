@@ -161,6 +161,70 @@ class TestXYChain:
         assert chain[1].operation == "op2"
 
 
+class TestWalk:
+    def _make_chain(self, n: int) -> XYChain:
+        chain = XYChain(name="walk-test")
+        for i in range(n):
+            chain.append(f"op{i}", y_state={"step": i})
+        return chain
+
+    def test_walk_all(self):
+        chain = self._make_chain(5)
+        entries = list(chain.walk())
+        assert len(entries) == 5
+        assert [e.index for e in entries] == [0, 1, 2, 3, 4]
+
+    def test_walk_is_generator(self):
+        import types
+        chain = self._make_chain(3)
+        result = chain.walk()
+        assert isinstance(result, types.GeneratorType)
+
+    def test_walk_start_index(self):
+        chain = self._make_chain(5)
+        entries = list(chain.walk(start_index=2))
+        assert [e.index for e in entries] == [2, 3, 4]
+
+    def test_walk_end_index(self):
+        chain = self._make_chain(5)
+        entries = list(chain.walk(end_index=2))
+        assert [e.index for e in entries] == [0, 1, 2]
+
+    def test_walk_start_and_end(self):
+        chain = self._make_chain(5)
+        entries = list(chain.walk(start_index=1, end_index=3))
+        assert [e.index for e in entries] == [1, 2, 3]
+
+    def test_walk_single_entry(self):
+        chain = self._make_chain(5)
+        entries = list(chain.walk(start_index=2, end_index=2))
+        assert len(entries) == 1
+        assert entries[0].index == 2
+
+    def test_walk_empty_chain(self):
+        chain = XYChain(name="empty")
+        assert list(chain.walk()) == []
+
+    def test_walk_yields_xyentry_objects(self):
+        chain = self._make_chain(3)
+        for entry in chain.walk():
+            assert isinstance(entry, XYEntry)
+            assert hasattr(entry, "index")
+            assert hasattr(entry, "x")
+            assert hasattr(entry, "y")
+            assert hasattr(entry, "timestamp")
+
+    def test_walk_out_of_bounds_clamps(self):
+        chain = self._make_chain(3)
+        entries = list(chain.walk(start_index=0, end_index=100))
+        assert len(entries) == 3
+
+    def test_walk_start_beyond_chain(self):
+        chain = self._make_chain(3)
+        entries = list(chain.walk(start_index=10))
+        assert entries == []
+
+
 class TestVerifyChain:
     def test_empty_chain(self):
         valid, idx = verify_chain([])
