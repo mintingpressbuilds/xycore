@@ -224,6 +224,26 @@ class TestWalk:
         entries = list(chain.walk(start_index=10))
         assert entries == []
 
+    def test_walk_reverse_all(self):
+        chain = self._make_chain(5)
+        entries = list(chain.walk(reverse=True))
+        assert [e.index for e in entries] == [4, 3, 2, 1, 0]
+
+    def test_walk_reverse_with_bounds(self):
+        chain = self._make_chain(5)
+        entries = list(chain.walk(start_index=1, end_index=3, reverse=True))
+        assert [e.index for e in entries] == [3, 2, 1]
+
+    def test_walk_reverse_empty_chain(self):
+        chain = XYChain(name="empty")
+        assert list(chain.walk(reverse=True)) == []
+
+    def test_walk_reverse_single_entry(self):
+        chain = self._make_chain(5)
+        entries = list(chain.walk(start_index=2, end_index=2, reverse=True))
+        assert len(entries) == 1
+        assert entries[0].index == 2
+
 
 class TestVerifyChain:
     def test_empty_chain(self):
