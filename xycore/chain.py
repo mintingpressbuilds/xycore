@@ -139,6 +139,20 @@ class XYChain:
             return self.entries[index]
         return None
 
+    def walk(self, start_index: int | None = None, end_index: int | None = None, reverse: bool = False):
+        """Yield chain entries between start and end (inclusive).
+
+        - start_index: begin here (inclusive), None = origin (index 0)
+        - end_index:   stop here (inclusive), None = last entry
+        - reverse:     if True, yield newest to oldest (index N down to 0)
+        """
+        start = 0 if start_index is None else start_index
+        end = len(self.entries) - 1 if end_index is None else end_index
+        indices = range(end, start - 1, -1) if reverse else range(start, end + 1)
+        for i in indices:
+            if 0 <= i < len(self.entries):
+                yield self.entries[i]
+
     def to_dict(self) -> dict[str, Any]:
         """Serialize chain to a dictionary."""
         return {
